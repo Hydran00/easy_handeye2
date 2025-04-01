@@ -31,6 +31,7 @@ setup(
                 'handeye_calibration_commander = easy_handeye2.handeye_calibration_commander:main',
                 'charuco_tracker = easy_handeye2.charuco_tracker:main',
                 'aruco_tracker = easy_handeye2.aruco_tracker:main',
+                'motion_planner = easy_handeye2.motion_planner:main',
      ],
    },
   scripts = [

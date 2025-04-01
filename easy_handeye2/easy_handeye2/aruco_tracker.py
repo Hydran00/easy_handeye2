@@ -8,6 +8,8 @@ import numpy as np
 import tf2_ros
 from geometry_msgs.msg import TransformStamped, Vector3, Quaternion
 from scipy.spatial.transform import Rotation as R
+from rosidl_runtime_py import set_message_fields, message_to_yaml
+
 class ArucoTracker(Node):
     def __init__(self):
         super().__init__('aruco_tracker')
@@ -29,6 +31,7 @@ class ArucoTracker(Node):
         self.declare_parameter('p1', 0.0)
         self.declare_parameter('p2', 0.0)
         self.declare_parameter('k3', 0.0)
+        self.declare_parameter('save_calibration', False)
 
         # Get parameters
         self.image_topic = self.get_parameter('image_topic').get_parameter_value().string_value
@@ -47,10 +50,14 @@ class ArucoTracker(Node):
         self.p2 = self.get_parameter('p2').get_parameter_value().double_value
         self.k3 = self.get_parameter('k3').get_parameter_value().double_value
 
+
         self.camera_matrix = np.array([[self.fx, 0, self.cx],
                                        [0, self.fy, self.cy],
                                        [0, 0, 1]], dtype=np.float32)
         self.dist_coeffs = np.array([[self.k1, self.k2, self.p1, self.p2, self.k3]], dtype=np.float32)
+
+        self.get_logger().info(f"Camera Matrix: \n{self.camera_matrix}")
+        self.get_logger().info(f"Distortion Coefficients: \n{self.dist_coeffs}")
 
         self.bridge = CvBridge()
         self.subscription = self.create_subscription(
@@ -75,6 +82,8 @@ class ArucoTracker(Node):
                 # Draw the marker and axes
                 cv2.aruco.drawDetectedMarkers(frame, corners, ids)
                 cv2.drawFrameAxes(frame, self.camera_matrix, self.dist_coeffs, rvec[0], tvec[0], self.marker_length / 2)
+                #resize to HD
+                frame = cv2.resize(frame, (1280, 720))
                 cv2.imshow("Aruco Marker", frame)
                 cv2.waitKey(1)
                 stamp = self.get_clock().now().to_msg()
@@ -90,9 +99,10 @@ class ArucoTracker(Node):
         rot_mat, _ = cv2.Rodrigues(rvec)
         q = self.rotation_matrix_to_quaternion(rot_mat)
         transform.transform.rotation = Quaternion(x=q[0], y=q[1], z=q[2], w=q[3])
-
+        # self.get_logger().info(f"Position: {tvec.flatten()}, Rotation: {q}")
         self.tf_broadcaster.sendTransform(transform)
 
+    
     @staticmethod
     def rotation_matrix_to_quaternion(rotmat):
         q = R.from_matrix(rotmat).as_quat()

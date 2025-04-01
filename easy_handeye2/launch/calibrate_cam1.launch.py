@@ -19,7 +19,7 @@ def generate_launch_description():
     #                         "image_topic": "camera_raw_1",
     #                         "charuco_square_length": 0.04347,
     #                         "charuco_marker_length": 0.03260,
-    #                         "camera_frame": "zed2_left_camera_optical_frame",
+    #                         "camera_frame": "cam1",
     #                         "marker_frame": "aruco_marker_frame",
     #                         "fx": 1068.55,
     #                         "fy": 1068.74,
@@ -36,24 +36,24 @@ def generate_launch_description():
                         parameters=[{
                             "image_topic": "camera_raw_1",
                             "marker_id": 0,
-                            "marker_length": 0.17,
-                            "camera_frame": "zed2_left_camera_optical_frame",
+                            "marker_length": 0.27,
+                            "camera_frame": "cam1",
                             "marker_frame": "aruco_marker_frame",
-                            "fx": 1068.55,
-                            "fy": 1068.74,
-                            "cx": 1122.4,
-                            "cy": 632.579,
-                            "k1": -0.0530216,
-                            "k2": 0.025668,
-                            "p1": 0.000143909,
-                            "p2": -0.000337566,
-                            "k3": -0.0100711
+                            "fx": 1046.810669,
+                            "fy": 1046.810669,
+                            "cx": 1138.934814,
+                            "cy": 636.102234,
+                            # "k1": -0.0530216,
+                            # "k2": 0.025668,
+                            # "p1": 0.000143909,
+                            # "p2": -0.000337566,
+                            # "k3": -0.0100711
                         }])
 
     handeye_server = Node(package='easy_handeye2', executable='handeye_server', name='handeye_server', parameters=[{
-        'name': "calibrator",
+        'name': "calibrator_cam1",
         'calibration_type': "eye_in_hand",
-        'tracking_base_frame': "zed2_left_camera_optical_frame",
+        'tracking_base_frame': "cam1",
         'tracking_marker_frame': "aruco_marker_frame",
         'robot_base_frame': "lbr_link_0",
         'robot_effector_frame': "lbr_link_ee"
@@ -63,16 +63,21 @@ def generate_launch_description():
                                   name='handeye_rqt_calibrator',
                                   # arguments=['--ros-args', '--log-level', 'debug'],
                                   parameters=[{
-                                    'name': "calibrator",
+                                    'name': "calibrator_cam1",
                                     'calibration_type': "eye_in_hand",
-                                    'tracking_base_frame': "zed2_left_camera_optical_frame",
+                                    'tracking_base_frame': "cam1",
                                     'tracking_marker_frame': "aruco_marker_frame",
                                     'robot_base_frame': "lbr_link_0",
                                     'robot_effector_frame': "lbr_link_ee"
                                   }])
     
-    handeye_publisher = Node(package='easy_handeye2', executable='handeye_publisher', name='handeye_publisher', parameters=[{
-        'name': "calibrator",
+
+    motion_planner = Node(package='easy_handeye2', executable='motion_planner', name='motion_planner', parameters=[{
+        "camera_to_calibrate": "cam1",
+        "robot_base_frame" : "lbr_link_0",
+        "robot_effector_frame" : "lbr_link_ee",
+        "topic_name" : "/lbr/target_frame",
+        "waiting_time": 5.0
     }])
 
     return LaunchDescription([
@@ -87,5 +92,5 @@ def generate_launch_description():
         # node_dummy_calib_eob,
         handeye_server,
         handeye_rqt_calibrator,
-        # handeye_publisher
+        motion_planner,
     ])

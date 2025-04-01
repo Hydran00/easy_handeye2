@@ -7,11 +7,16 @@ from launch_ros.actions import Node
 def generate_launch_description():
     arg_name = DeclareLaunchArgument('name')
 
-    handeye_publisher = Node(package='easy_handeye2', executable='handeye_publisher', name='handeye_publisher', parameters=[{
-        'name': LaunchConfiguration('name'),
+    handeye_publisher_1 = Node(package='easy_handeye2', executable='handeye_publisher', name='handeye_publisher', parameters=[{
+        'name': "calibrator_cam1",
+    }])
+
+    handeye_publisher_2 = Node(package='easy_handeye2', executable='handeye_publisher', name='handeye_publisher', parameters=[{
+        'name': "calibrator_cam2",
     }])
 
     return LaunchDescription([
-        arg_name,
-        handeye_publisher,
+        # arg_name,
+        handeye_publisher_1,
+        handeye_publisher_2
     ])
