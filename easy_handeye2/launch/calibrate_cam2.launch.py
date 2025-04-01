@@ -14,48 +14,24 @@ def generate_launch_description():
     node_dummy_calib_eih = Node(package='tf2_ros', executable='static_transform_publisher', name='dummy_publisher',
                                 arguments=f'--x 0 --y 0 --z 0.1 --qx 0 --qy 0 --qz 0 --qw 1'.split(' ') + ['--frame-id', "lbr_link_0",
                                                                                                            '--child-frame-id', "lbr_link_ee"])
-    # calib_node = Node(package='easy_handeye2', executable='charuco_tracker', name='charuco_tracker',
-    #                     parameters=[{
-    #                         "image_topic": "camera_raw_1",
-    #                         "charuco_square_length": 0.04347,
-    #                         "charuco_marker_length": 0.03260,
-    #                         "camera_frame": "zed2_left_camera_optical_frame",
-    #                         "marker_frame": "aruco_marker_frame",
-    #                         "fx": 1068.55,
-    #                         "fy": 1068.74,
-    #                         "cx": 1122.4,
-    #                         "cy": 632.579,
-    #                         "k1": -0.0530216,
-    #                         "k2": 0.025668,
-    #                         "p1": 0.000143909,
-    #                         "p2": -0.000337566,
-    #                         "k3": -0.0100711
-    #                     }])
     
     calib_node = Node(package='easy_handeye2', executable='aruco_tracker', name='charuco_tracker',
                         parameters=[{
                             "image_topic": "camera_raw_2",
                             "marker_id": 0,
                             "marker_length": 0.09928,
-                            "camera_frame": "zed2_left_camera_optical_frame",
+                            "camera_frame": "cam2",
                             "marker_frame": "aruco_marker_frame",
-
-                             
                             "fx": 1058.674316,
                             "fy": 1058.674316,
                             "cx": 1112.441162,
                             "cy": 624.768311,
-                            # "k1": -0.0530216,
-                            # "k2": 0.025668,
-                            # "p1": 0.000143909,
-                            # "p2": -0.000337566,
-                            # "k3": -0.0100711
                         }])
 
     handeye_server = Node(package='easy_handeye2', executable='handeye_server', name='handeye_server', parameters=[{
         'name': "calibrator",
         'calibration_type': "eye_on_base",
-        'tracking_base_frame': "zed2_left_camera_optical_frame",
+        'tracking_base_frame': "cam2",
         'tracking_marker_frame': "aruco_marker_frame",
         'robot_base_frame': "lbr_link_0",
         'robot_effector_frame': "lbr_link_ee"
@@ -67,7 +43,7 @@ def generate_launch_description():
                                   parameters=[{
                                     'name': "calibrator",
                                     'calibration_type': "eye_in_hand",
-                                    'tracking_base_frame': "zed2_left_camera_optical_frame",
+                                    'tracking_base_frame': "cam2",
                                     'tracking_marker_frame': "aruco_marker_frame",
                                     'robot_base_frame': "lbr_link_0",
                                     'robot_effector_frame': "lbr_link_ee"
