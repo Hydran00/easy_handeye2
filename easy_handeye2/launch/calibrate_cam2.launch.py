@@ -29,7 +29,7 @@ def generate_launch_description():
                         }])
 
     handeye_server = Node(package='easy_handeye2', executable='handeye_server', name='handeye_server', parameters=[{
-        'name': "calibrator",
+        'name': "calibrator_cam2",
         'calibration_type': "eye_on_base",
         'tracking_base_frame': "cam2",
         'tracking_marker_frame': "aruco_marker_frame",
@@ -41,7 +41,7 @@ def generate_launch_description():
                                   name='handeye_rqt_calibrator',
                                   # arguments=['--ros-args', '--log-level', 'debug'],
                                   parameters=[{
-                                    'name': "calibrator",
+                                    'name': "calibrator_cam2",
                                     'calibration_type': "eye_in_hand",
                                     'tracking_base_frame': "cam2",
                                     'tracking_marker_frame': "aruco_marker_frame",
@@ -50,7 +50,7 @@ def generate_launch_description():
                                   }])
     
     handeye_publisher = Node(package='easy_handeye2', executable='handeye_publisher', name='handeye_publisher', parameters=[{
-        'name': "calibrator",
+        'name': "calibrator_cam2",
     }])
 
     motion_planner = Node(package='easy_handeye2', executable='motion_planner', name='motion_planner', parameters=[{

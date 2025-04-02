@@ -42,11 +42,14 @@ class MotionPlanner(Node):
         self.waiting_time = self.get_parameter("waiting_time").get_parameter_value().double_value
         # Position increment
 
-        self.starting_position = np.array([0.5818, -0.1667, 0.5312, -0.05, 0.998, -0.003, 0.0357])
+        self.starting_position1 = np.array([0.58181, -0.16668, 0.53191, -0.049209, 0.99814, -0.003696, 0.035745])
+        self.starting_position2 = np.array([0.58181, -0.16668, 0.53191, -0.049209, 0.99814, -0.003696, 0.035745])
         # Normalize quaternion part
-        self.starting_position[3:7] = self.starting_position[3:7] / np.linalg.norm(self.starting_position[3:7])
+        self.starting_position1[3:7] = self.starting_position1[3:7] / np.linalg.norm(self.starting_position1[3:7])
+        self.starting_position2[3:7] = self.starting_position2[3:7] / np.linalg.norm(self.starting_position2[3:7])
 
         if self.camera_to_calibrate == "cam1":
+            self.starting_position = self.starting_position1
             self.target_keypoints = np.array([
                 [0.53, 0.11, 0.51,  -0.25, 0.932, -0.217, -0.14],
                 [0.72, -0.20, 0.474, -0.51, 0.85, 0.07, -0.03],
@@ -58,15 +61,17 @@ class MotionPlanner(Node):
                 # [0.0, 0.0, 0.0,  0.0,0.0,0.0,1.0],
             ])
         elif self.camera_to_calibrate == "cam2":
+            self.starting_position = self.starting_position2
             self.target_keypoints = np.array([
                 # self.starting_position.tolist(),
-                [0.55454, -0.16556, 0.53259, 0.33266, 0.85817, -0.38668, 0.057999],
-                [0.52717, -0.16629, 0.53597, 0.40037, 0.78332, 0.30039, 0.36862],
-                [0.58247, -0.16705, 0.53331, 0.91821, 0.38372, -0.095565, -0.022822],
-                [0.57753, -0.162, 0.5375, 0.91809, 0.38502, -0.088328, -0.032708],
-                [0.55005, -0.22137, 0.4009, 0.60624, 0.78302, 0.083376, -0.1114],
-                [0.55005, -0.22143, 0.401, 0.12746, 0.98431, -0.11439, -0.0424],
-                [0.6078, -0.14283, 0.40282, 0.16126, 0.93077, -0.061053, 0.32238],
+                [0.57908, -0.23653, 0.42143,0.26765, 0.96304, 0.025826, 0.015615],
+                [0.58065, -0.2411, 0.41613, -0.51465, 0.83043, 0.14176, -0.15945],
+                [0.58202, -0.24196, 0.41821, -0.57293, 0.72684, -0.36953, 0.083071],
+                [0.58355, -0.157, 0.42033, -0.65054, 0.72287, -0.20238, -0.11533],
+                [0.58355, -0.15702, 0.42037, 0.20284, 0.95978, -0.022402, 0.19279],
+                [0.58177, -0.17116, 0.47154,0.18184, 0.97903, 0.040893, -0.082212],
+                [0.58083, -0.17149, 0.4723,0.17043, 0.85785, -0.48482, 0.0026926],
+                [0.58088, -0.17145, 0.47237, 0.19752, 0.89517, -0.13075, 0.37758],
                 self.starting_position.tolist()
             ])
 
@@ -223,11 +228,19 @@ class MotionPlanner(Node):
                     transform_msg.transform.translation.z,
                 ]
             )
-            if np.linalg.norm(self.initial_position - [0.5818,-0.166, 0.531] ) > 0.005:
-                self.get_logger().warn("Initial position is not correct, exiting...")
+            error = np.linalg.norm(self.initial_position - self.starting_position[:3])
+            if error > 0.2:
+                self.get_logger().warn("Error is too high: " + str(error))
+                self.get_logger().error("Initial position is not correct, exiting...")
                 exit(1)
             else:
                 self.get_logger().info("Initial position is correct, continuing...")
+            # if self.camera_to_calibrate == "cam2":
+            #     if np.linalg.norm(self.initial_position - self.starting_position2[:3]) > 0.1:
+            #         self.get_logger().warn("Initial position is not correct, exiting...")
+            #         exit(1)
+            #     else:
+            #         self.get_logger().info("Initial position is correct, continuing...")
             self.commanded_x = self.initial_position[0]
             self.commanded_y = self.initial_position[1]
             self.commanded_z = self.initial_position[2]
