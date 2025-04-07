@@ -19,7 +19,7 @@ def generate_launch_description():
                         parameters=[{
                             "image_topic": "camera_raw_2",
                             "marker_id": 0,
-                            "marker_length": 0.09928,
+                            "marker_length": 0.09968,
                             "camera_frame": "cam2",
                             "marker_frame": "aruco_marker_frame",
                             "fx": 1058.674316,

@@ -63,7 +63,6 @@ class MotionPlanner(Node):
         elif self.camera_to_calibrate == "cam2":
             self.starting_position = self.starting_position2
             self.target_keypoints = np.array([
-                # self.starting_position.tolist(),
                 [0.57908, -0.23653, 0.42143,0.26765, 0.96304, 0.025826, 0.015615],
                 [0.58065, -0.2411, 0.41613, -0.51465, 0.83043, 0.14176, -0.15945],
                 [0.58202, -0.24196, 0.41821, -0.57293, 0.72684, -0.36953, 0.083071],
@@ -146,7 +145,7 @@ class MotionPlanner(Node):
             # number_of_samples_ang = int(
             #     np.linalg.norm(self.step_orientation[i]) / ang_distance_between_waypoints
             # )
-            number_of_samples = 6000 #max(number_of_samples_lin, number_of_samples_ang)
+            number_of_samples = 5000 #max(number_of_samples_lin, number_of_samples_ang)
             self.get_logger().info("Number of samples: " + str(number_of_samples))
             if i==0:
                 T_start = SE3.Rt(
@@ -281,7 +280,7 @@ class MotionPlanner(Node):
         target_pose.pose.orientation.w = traj_point[6]
 
         # Publish the message
-        # self.get_logger().info("Publishing target pose: " + str(target_pose))
+        # self.get_logger().info("Publishing target pose: " + str(target_pose.pose.position))
         self.publisher_.publish(target_pose)
 
 def main(args=None):
