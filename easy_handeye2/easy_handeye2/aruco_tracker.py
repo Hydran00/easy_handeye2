@@ -17,7 +17,7 @@ class ArucoTracker(Node):
         # Declare parameters
         self.declare_parameter('image_topic', '/camera/image_raw')
         self.declare_parameter('marker_id', 0)
-        self.declare_parameter('marker_length', 0.17)  # meters
+        self.declare_parameter('marker_length', 0.022)  # meters
         self.declare_parameter('camera_frame', 'camera_frame')
         self.declare_parameter('marker_frame', 'aruco_marker')
         
@@ -61,12 +61,16 @@ class ArucoTracker(Node):
 
         self.bridge = CvBridge()
         self.subscription = self.create_subscription(
-            Image, self.image_topic, self.image_callback, 10)
+            Image, self.image_topic, self.image_callback, rclpy.qos.qos_profile_sensor_data)
         self.tf_broadcaster = tf2_ros.TransformBroadcaster(self)
 
         # Define ArUco dictionary
         self.dictionary = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_50)
         self.parameters = cv2.aruco.DetectorParameters()
+
+        self.last_rvec = None
+        self.last_tvec = None
+        self.img_received = False
 
     def image_callback(self, msg):
         frame = self.bridge.imgmsg_to_cv2(msg, desired_encoding='bgr8')
@@ -86,9 +90,25 @@ class ArucoTracker(Node):
                 frame = cv2.resize(frame, (1280, 720))
                 cv2.imshow("Aruco Marker", frame)
                 cv2.waitKey(1)
-                stamp = self.get_clock().now().to_msg()
-                self.publish_transform(rvec[0], tvec[0], stamp)
-
+                stamp = msg.header.stamp
+                self.last_rvec = rvec[0]
+                self.last_tvec = tvec[0] 
+                self.publish_transform(self.last_rvec, self.last_tvec, stamp)
+        else:
+            frame = cv2.resize(frame, (1280, 720))
+            cv2.imshow("Aruco Marker", frame)
+            cv2.waitKey(1)
+        
+        if not self.img_received:
+            self.timer = self.create_timer(0.01, self.timer_callback)
+            self.img_received = True
+    
+    def timer_callback(self):
+        if self.last_rvec is not None and self.last_tvec is not None:
+            self.publish_transform(self.last_rvec, self.last_tvec, self.get_clock().now().to_msg())
+        else:
+            self.get_logger().warn("No marker detected yet.")
+        
     def publish_transform(self, rvec, tvec, stamp):
         transform = TransformStamped()
         transform.header.stamp = stamp

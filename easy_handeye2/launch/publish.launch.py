@@ -8,11 +8,11 @@ def generate_launch_description():
     arg_name = DeclareLaunchArgument('name')
 
     handeye_publisher_1 = Node(package='easy_handeye2', executable='handeye_publisher', name='handeye_publisher', parameters=[{
-        'name': "calibrator_cam1",
+        'name': "calibrator_cam_1",
     }])
 
     handeye_publisher_2 = Node(package='easy_handeye2', executable='handeye_publisher', name='handeye_publisher', parameters=[{
-        'name': "calibrator_cam2",
+        'name': "calibrator_cam_2",
     }])
 
     return LaunchDescription([

@@ -14,8 +14,10 @@ setup(
      ('share/' + package_name + '/resource', glob(os.path.join('resource', '*.ui'))),
      ('share/' + package_name, ['package.xml']),
      ('share/' + package_name, ['plugin_evaluator.xml','plugin_calibrator.xml']),
-     (os.path.join('share', package_name, 'launch'), glob(os.path.join('launch', '*')))
-   ],
+     (os.path.join('share', package_name, 'launch'), glob(os.path.join('launch', '*'))),
+     (os.path.join('share', package_name, 'rviz'), glob(os.path.join('rviz', '*.rviz')))
+  ],
+
  install_requires=['setuptools'],
  zip_safe=True,
  maintainer='Marco Esposito',

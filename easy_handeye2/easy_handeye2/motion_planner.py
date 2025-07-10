@@ -24,7 +24,7 @@ class MotionPlanner(Node):
         self.declare_parameter("camera_to_calibrate", "cam1")
         self.declare_parameter("robot_base_frame", "lbr_link_0")
         self.declare_parameter("robot_effector_frame", "lbr_link_ee")
-        self.declare_parameter("topic_name", "/lbr/target_frame")
+        self.declare_parameter("topic_name", "/lbr/target_framee")
         self.declare_parameter("waiting_time", 3.0)
 
         self.camera_to_calibrate = self.get_parameter("camera_to_calibrate").get_parameter_value().string_value
@@ -42,70 +42,47 @@ class MotionPlanner(Node):
         self.waiting_time = self.get_parameter("waiting_time").get_parameter_value().double_value
         # Position increment
 
-        self.starting_position1 = np.array([0.58181, -0.16668, 0.53191, -0.049209, 0.99814, -0.003696, 0.035745])
-        self.starting_position2 = np.array([0.58181, -0.16668, 0.53191, -0.049209, 0.99814, -0.003696, 0.035745])
+        self.starting_position = np.array([0.58181, -0.16668, 0.53191, -0.049209, 0.99814, -0.003696, 0.035745])
+    
         # Normalize quaternion part
-        self.starting_position1[3:7] = self.starting_position1[3:7] / np.linalg.norm(self.starting_position1[3:7])
-        self.starting_position2[3:7] = self.starting_position2[3:7] / np.linalg.norm(self.starting_position2[3:7])
+        self.starting_position[3:7] = self.starting_position[3:7] / np.linalg.norm(self.starting_position[3:7])
 
-        if self.camera_to_calibrate == "cam1":
-            self.starting_position = self.starting_position1
-            self.target_keypoints = np.array([
-                [0.53, 0.11, 0.51,  -0.25, 0.932, -0.217, -0.14],
-                [0.72, -0.20, 0.474, -0.51, 0.85, 0.07, -0.03],
-                [0.36, -0.15, 0.52, -0.29, 0.92, -0.06,0.24],
-                [0.31, -0.48, 0.41,  0.147, 0.95, 0.19, 0.2],
-                [0.44, -0.03, 0.53, -0.54, 0.82, -0.10, 0.17],
-                # starting position
-                self.starting_position.tolist(),
-                # [0.0, 0.0, 0.0,  0.0,0.0,0.0,1.0],
-            ])
-        elif self.camera_to_calibrate == "cam2":
-            self.starting_position = self.starting_position2
-            self.target_keypoints = np.array([
-                [0.57908, -0.23653, 0.42143,0.26765, 0.96304, 0.025826, 0.015615],
-                [0.58065, -0.2411, 0.41613, -0.51465, 0.83043, 0.14176, -0.15945],
-                [0.58202, -0.24196, 0.41821, -0.57293, 0.72684, -0.36953, 0.083071],
-                [0.58355, -0.157, 0.42033, -0.65054, 0.72287, -0.20238, -0.11533],
-                [0.58355, -0.15702, 0.42037, 0.20284, 0.95978, -0.022402, 0.19279],
-                [0.58177, -0.17116, 0.47154,0.18184, 0.97903, 0.040893, -0.082212],
-                [0.58083, -0.17149, 0.4723,0.17043, 0.85785, -0.48482, 0.0026926],
-                [0.58088, -0.17145, 0.47237, 0.19752, 0.89517, -0.13075, 0.37758],
-                self.starting_position.tolist()
-            ])
+        # convert into RPY
+        self.initial_RPY = R.from_quat(self.starting_position[3:7]).as_euler("xyz")
 
+        self.starting_position = self.starting_position
+        self.target_keypoints = np.array([
+            self.starting_position.tolist(),
+
+
+        ])
+
+        if self.camera_to_calibrate == "cam2":
+            combinations = [(-35, 0, 0),
+                            (35, 0, 0),
+                            (0, -35, 0),
+                            (0, 35, 0),
+                            (0, 0, -35),
+                            (0, 0, 20),
+                            (0, 0, 0)]
+        elif self.camera_to_calibrate == "cam1":
+            combinations = [(-30, 0, 0),
+                            (20, 0, 0),
+                            (0, -15, 0),
+                            (0, 20, 0),
+                            (0, 0, -40),
+                            (0, 0, 50),
+                            (0, 0, 0)]
         else:
-            self.get_logger().error("Unknown camera to calibrate, exiting...")
-            exit(1)
+            raise ValueError("Invalid camera_to_calibrate parameter. Use 'cam1' or 'cam2'.")
 
-        # normalize quaternion part
-        self.target_keypoints[:, 3:7] = self.target_keypoints[:, 3:7] / np.linalg.norm(self.target_keypoints[:, 3:7], axis=1, keepdims=True)
-
-        # self.step_size = np.array([
-        #     [-0.00, -0.000, -0.0],
-        #     [-0.04, 0.000, -0.0],
-        #     [-0.00, 0.003, -0.0],
-        #     [-0.00, 0.000, 0.1],
-        #     [-0.00, 0.000, 0.0],
-        #     [-0.00, 0.000, 0.0],
-        #     [-0.00, 0.000, 0.0],
-        #     [-0.05, 0.000, 0.0],
-        # ])
-        # # Orientation increment in RPY
-        # self.step_orientation = np.array([
-        #     [np.pi/14, 0.0, 0.0],
-        #     [-np.pi/10, np.pi/10, 0.0],
-        #     [0, -np.pi/14, np.pi/10],
-        #     [0, 0, -np.pi/10],
-        #     [0, 0, np.pi/10],
-        #     [np.pi/10, 0, 0.0],
-        #     [-np.pi/8, -0, np.pi/8],
-        #     [0, 0, -np.pi/8],
-        # ])
-
-        # if self.step_size.shape[0] != self.step_orientation.shape[0]:
-        #     raise ValueError("step_size and step_orientation must have the same number of rows")
-        #     exit(1)
+        self.target_keypoints = []
+        for roll_offset, pitch_offset, yaw_offset in combinations:
+            offset_rpy = self.initial_RPY + np.radians([roll_offset, pitch_offset, yaw_offset])
+            offset_quat = R.from_euler("xyz", offset_rpy).as_quat()
+            target_point = np.hstack((self.starting_position[:3], offset_quat))
+            self.target_keypoints.append(target_point)
+        self.target_keypoints = np.array(self.target_keypoints)
 
         self.initial_orientation = None
         self.initial_position = None
