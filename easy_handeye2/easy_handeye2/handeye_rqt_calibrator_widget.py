@@ -200,10 +200,16 @@ class RqtHandeyeCalibratorWidget(QWidget):
 
     def _updateUI(self):
         new_transforms = self.client.get_current_transforms()
-        if new_transforms is None or self._check_still_moving(new_transforms):
+        if new_transforms is None:
+            self._current_transforms = None
             self._widget.takeButton.setEnabled(False)
+            self._widget.takeButton.setToolTip('Waiting for recent, synchronized camera and robot TF.')
+        elif self._check_still_moving(new_transforms):
+            self._widget.takeButton.setEnabled(False)
+            self._widget.takeButton.setToolTip('Motion detected: hold the board and tracker still.')
         else:
             self._widget.takeButton.setEnabled(True)
+            self._widget.takeButton.setToolTip('Tracking available and stationary: ready to acquire.')
 
     def handle_take_sample(self):
         sample_list = self.client.take_sample()
