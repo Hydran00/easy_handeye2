@@ -29,6 +29,7 @@ def generate_launch_description():
             description="eye_on_base (static camera) or eye_in_hand (camera on the NDI marker)",
         ),
         DeclareLaunchArgument("image_topic", default_value="/k4a/rgb/image_raw"),
+        DeclareLaunchArgument("camera_info_topic", default_value="/k4a/rgb/camera_info"),
         DeclareLaunchArgument("camera_link", default_value=CAMERA_FRAME),
         DeclareLaunchArgument(
             "camera_optical_frame", default_value=CAMERA_OPTICAL_FRAME
@@ -116,6 +117,7 @@ def generate_launch_description():
         parameters=[
             {
                 "image_topic": LaunchConfiguration("image_topic"),
+                "camera_info_topic": LaunchConfiguration("camera_info_topic"),
                 "camera_link": LaunchConfiguration("camera_link"),
                 "camera_optical_frame": LaunchConfiguration("camera_optical_frame"),
                 "marker_frame": CHESSBOARD_FRAME,
@@ -146,20 +148,7 @@ def generate_launch_description():
                     LaunchConfiguration("square_size"), value_type=float
                 ),
                 "show_preview": True,
-                # Kinect RGB CameraInfo: 4096x3072, rgb_camera_link, rational_polynomial.
-                # These intrinsics require images from the matching camera stream.
-                "fx": 1936.1187744140625,
-                "fy": 1935.5592041015625,
-                "cx": 2051.88330078125,
-                "cy": 1558.7591552734375,
-                "k1": 0.4857649803161621,
-                "k2": -2.7081496715545654,
-                "p1": -0.0003263719263486564,
-                "p2": -0.00037964279181323946,
-                "k3": 1.6124367713928223,
-                "k4": 0.3660493493080139,
-                "k5": -2.531031608581543,
-                "k6": 1.5364876985549927,
+
             }
         ],
         output="screen",
